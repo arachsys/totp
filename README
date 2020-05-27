@@ -1,0 +1,113 @@
+TOTP
+====
+
+This is a simple time-based one-time password generator, compatible with the
+RFC 6238 TOTP scheme popularised by Google Authenticator.
+
+
+Usage
+-----
+
+The totp utility reads lines from standard input, containing TOTP secrets
+in the format [DIGEST:]SECRET[:DIGITS[:INTERVAL[:OFFSET]]].
+
+SECRET is the only compulsory field. As with Google Authenticator, it should
+be base32 encoded using the standard [A-Z2-7] alphabet without padding.
+
+DIGEST can be sha1, sha256 or sha512, and defaults to the most commonplace
+choice of sha1 if unspecified.
+
+DIGITS is the number of decimal output digits and can be 6, 7 or 8. It
+defaults to the standard length of 6.
+
+INTERVAL and OFFSET are the counter interval in seconds and the (signed)
+unix time at which the counter starts. These should usually be left at the
+defaults of 30 and 0 respectively, but it is sometimes handy to specify an
+OFFSET of +/- the interval to get the next or previous code in the sequence.
+
+For each valid secret line read, the tool prints the current value of the
+code corresponding to that secret to standard output. Any trailing text on
+the secret line is also appended, allowing multiple keys in the same input
+file to be labelled and distinguished.
+
+For example, given the input
+
+  sha256:ABCDEFGHIJKLMNOPQRSTUVWXYZ234567:8 adam@acme.org
+  765432ZYXWVUTSRQPONMLKJIHGFEDCBA brian@megacorp.com (current)
+  765432ZYXWVUTSRQPONMLKJIHGFEDCBA:6:30:-30 brian@megacorp.com (next)
+
+totp might generate
+
+  01360115 adam@acme.org
+  889775 brian@megacorp.com (current)
+  140851 brian@megacorp.com (next)
+
+
+Compatibility
+-------------
+
+Google Authenticator hard-codes the sha1 digest, 30 second time step and
+zero offset, hence those parameter defaults in totp.
+
+Authy also natively supports 7-digit codes. These use the same sha1 digest
+with zero offset and an update interval of 10 seconds.
+
+Although these applications store keys verbatim, they have no easy interface
+to inspect or extract the keys. You may need to create new/replacement
+two-factor authentication keys if you stored keys in these programs without
+retaining your own copy.
+
+
+Security
+--------
+
+This tool was written as a work-around for sites and systems that insist on
+two-factor authentication tied to an easily-lost mobile device running a
+user-hostile, unauditable, proprietary operating system.
+
+Disclosure of the secrets used to seed this generator allows an attacker to
+generate valid authentication codes and should be viewed as equivalent to
+a compromised password.
+
+You might consider encrypted storage of secrets, decrypting them when
+required with something like
+
+  age -d ~/.config/2fa.age | totp
+
+or
+
+  gpg -d ~/.config/2fa.gpg | totp
+
+In this case, secrets are safe at rest assuming sufficient passphrase
+entropy, but decrypting them to run totp on a compromised/untrusted host
+would present an easy target to an attacker.
+
+Please assess the security implications and trade-offs in your own
+environment and circumstances.
+
+
+Building and installing
+-----------------------
+
+Unpack the source tar.gz file and change to the unpacked directory.
+
+Run 'make', then 'make install' as root to install the totp binary in /bin.
+Alternatively, you can set DESTDIR and/or BINDIR to install in a different
+location, or strip and copy the compiled binary into the correct place
+manually.
+
+totp depends on libcrypto and the associated header files from LibreSSL or
+OpenSSL, but should otherwise be portable to any reasonable POSIX platform.
+
+It may be necessary to add include paths to CFLAGS or library paths to
+LDLIBS if your compiler cannot find the LibreSSL/OpenSSL headers and
+libraries in the directories it searches by default.
+
+Please report any problems or bugs to Chris Webb <chris@arachsys.com>.
+
+
+Copying
+-------
+
+This software was written by Chris Webb <chris@arachsys.com> and is
+distributed as Free Software under the terms of the MIT license in COPYING.
