@@ -25,7 +25,7 @@ int main(void) {
     secret = line + strspn(line, "\t ");
 
     if (!strncmp(secret, "sha1:", strlen("sha1:")))
-      digest= EVP_sha1(), secret += strlen("sha1:");
+      digest = EVP_sha1(), secret += strlen("sha1:");
     else if (!strncmp(secret, "sha256:", strlen("sha256:")))
       digest = EVP_sha256(), secret += strlen("sha256:");
     else if (!strncmp(secret, "sha512:", strlen("sha512:")))
@@ -57,7 +57,7 @@ int main(void) {
       clock = (time(NULL) - offset) / interval;
       for (count = 0; count < 8; count++)
         msg[7 - count] = clock >> 8*count;
-      hmac = HMAC(digest, key, length, msg, sizeof(msg), NULL, 0);
+      hmac = HMAC(digest, key, length, msg, sizeof(msg), NULL, NULL);
 
       for (code = count = 0; count < 4; count++)
         code += hmac[(hmac[19] & 0x0f) + 3 - count] << 8*count;
