@@ -16,6 +16,7 @@ int main(void) {
   uint8_t digits, *hmac, *key, msg[8];
   uint32_t bits, code, count;
   uint64_t clock, interval;
+  unsigned int hmacsize;
   const EVP_MD *digest;
 
   key = NULL, keysize = 0;
@@ -57,10 +58,10 @@ int main(void) {
       clock = (time(NULL) - offset) / interval;
       for (count = 0; count < 8; count++)
         msg[7 - count] = clock >> 8*count;
-      hmac = HMAC(digest, key, length, msg, sizeof(msg), NULL, NULL);
+      hmac = HMAC(digest, key, length, msg, sizeof(msg), NULL, &hmacsize);
 
       for (code = count = 0; count < 4; count++)
-        code += hmac[(hmac[19] & 0x0f) + 3 - count] << 8*count;
+        code += hmac[(hmac[hmacsize - 1] & 0x0f) + 3 - count] << 8*count;
       code &= 0x7fffffff;
 
       if (digits == 6)
