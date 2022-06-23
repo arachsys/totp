@@ -1,21 +1,17 @@
-PREFIX =
-BINDIR = ${PREFIX}/bin
-DESTDIR =
+BINDIR := $(PREFIX)/bin
 
-CC = gcc
-CFLAGS = -Os -Wall -pedantic -std=gnu99
-LDFLAGS = -Wl,--as-needed
-LDLIBS = -lcrypto
+CFLAGS := -Os -Wall -Wfatal-errors
+LDFLAGS := -Wl,--as-needed
+LDLIBS := -lcrypto
 
-BINARIES = totp
+totp: totp.c Makefile
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LDLIBS)
 
-all: ${BINARIES}
-
-install: ${BINARIES}
-	mkdir -p ${DESTDIR}${BINDIR}
-	install -s ${BINARIES} ${DESTDIR}${BINDIR}
+install: totp
+	mkdir -p $(DESTDIR)$(BINDIR)
+	install -s $^ $(DESTDIR)$(BINDIR)
 
 clean:
-	rm -f ${BINARIES}
+	rm -f totp
 
-.PHONY: all install clean
+.PHONY: install clean
