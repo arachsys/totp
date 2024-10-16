@@ -13,7 +13,7 @@ int main(void) {
   char *line, *secret;
   int64_t offset;
   size_t keysize, length, linesize;
-  uint8_t digits, *hmac, *key, msg[8];
+  uint8_t digits, hmac[EVP_MAX_MD_SIZE], *key, msg[8];
   uint32_t bits, code, count;
   uint64_t clock, interval;
   unsigned int hmacsize;
@@ -58,7 +58,8 @@ int main(void) {
       clock = (time(NULL) - offset) / interval;
       for (count = 0; count < 8; count++)
         msg[7 - count] = clock >> 8*count;
-      hmac = HMAC(digest, key, length, msg, sizeof(msg), NULL, &hmacsize);
+      if (!HMAC(digest, key, length, msg, sizeof(msg), hmac, &hmacsize))
+        return 1;
 
       for (code = count = 0; count < 4; count++)
         code += hmac[(hmac[hmacsize - 1] & 0x0f) + 3 - count] << 8*count;
